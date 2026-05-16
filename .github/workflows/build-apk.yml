@@ -23,7 +23,22 @@ jobs:
           flutter-version: '3.19.0'
 
       - name: Create local.properties
-        run: echo "flutter.sdk=$(flutter --version --machine | python3 -c "import sys,json; print(json.load(sys.stdin).get('flutterRoot',''))" 2>/dev/null || dirname $(dirname $(which flutter)))" > android/local.properties
+        run: echo "flutter.sdk=$(dirname $(dirname $(which flutter)))" > android/local.properties
+
+      - name: Generate launcher icons
+        run: |
+          sudo apt-get install -y imagemagick
+          for size in 48 72 96 144 192; do
+            case $size in
+              48) folder="mipmap-mdpi";;
+              72) folder="mipmap-hdpi";;
+              96) folder="mipmap-xhdpi";;
+              144) folder="mipmap-xxhdpi";;
+              192) folder="mipmap-xxxhdpi";;
+            esac
+            mkdir -p android/app/src/main/res/$folder
+            convert -size ${size}x${size} xc:#6366F1 android/app/src/main/res/$folder/ic_launcher.png
+          done
 
       - name: Get dependencies
         run: flutter pub get
